@@ -1,42 +1,22 @@
-# 🚀 ESP32-Gateway: Industrial IoT Series (Phase 1)
+# ESP32-Gateway: Secure IoT Telemetry Gateway (Phase 1)
 
-**Phase 1 Completion: Industrial Infrastructure & Secure Gateway Systems**
+An ESP32-S3 gateway that publishes sensor telemetry to a cloud MQTT broker over TLS, with a local over-temperature alarm that works without cloud connectivity. Part of my #30DaysOfEngineering series (write-ups: https://medium.com/@reahs302444).
 
-The **ESP32-Gateway** is a high-performance, industrial-grade IoT Gateway built on the **ESP32-S3 (Nano Banana)**. This project serves as a secure bridge between edge sensors and cloud-based analytical engines. It is designed to prioritize **Security (TLS/SSL)**, **Concurrency (FreeRTOS)**, and **Autonomous Reliability (Edge Intelligence)**.
+## Architecture
 
----
+1. **Edge:** ESP32-S3 firmware (C++). A FreeRTOS telemetry task, pinned to one core, reads the internal temperature and publishes JSON.
+2. **Transport:** MQTT over TLS (port 8883) to HiveMQ Cloud, with the server verified against a CA certificate.
+3. **Orchestration:** Node-RED (Docker) routes messages.
+4. **Storage and dashboards:** InfluxDB v2 and Grafana.
 
-## 🏗️ System Architecture
+## What it does
 
-The gateway utilizes a 4-layer logical stack to ensure data integrity and sub-millisecond safety responses. 
+- Publishes temperature telemetry as JSON over MQTT with TLS.
+- Local over-temperature alarm (for example above 40 C) that runs on the device itself.
+- Backend stack (Node-RED, InfluxDB, Grafana) for logging and visualisation.
 
+## Status and limitations
 
-
-### **The Stack**
-1. **Edge Layer:** ESP32-S3 running a dual-core FreeRTOS architecture for non-blocking sensor acquisition.
-2. **Transport Layer:** Encrypted MQTT via **HiveMQ Cloud** using TLS 1.2 certificate-based authentication.
-3. **Orchestration Layer:** **Node-RED** (Dockerized) for protocol translation and logic routing.
-4. **Persistence & Analytics:** **InfluxDB v2** (Time-Series) and **Grafana** for real-time command center visualization.
-
----
-
-## 🛠️ Key Engineering Features
-
-### **1. Autonomous Edge Intelligence**
-Unlike standard "dumb" gateways, the Redwan-Gateway features a local **Safety Interlock**. If the CPU temperature or sensor vitals exceed a defined threshold (e.g., 40°C), the gateway triggers a local hardware alarm in **<1ms**, independent of cloud connectivity.
-
-### **2. Industrial Security Protocol**
-Implemented **MQTTS (8883)** with SSL/TLS handshaking. Every packet is encrypted, ensuring that industrial telemetry remains private and protected against Man-in-the-Middle (MITM) attacks.
-
-### **3. Time-Series Audit Trail**
-By integrating **InfluxDB**, every state change (Manual Override vs. Autonomous Trigger) is timestamped and stored. This creates a permanent audit trail for debugging and operational accountability.
-
----
-
-## 📊 Performance Metrics
-* **Processing Latency:** Sub-millisecond local execution.
-* **Cloud Round-trip:** <150ms (average) for telemetry-to-dashboard updates.
-* **Uptime:** Verified for 24-hour continuous stress-testing.
-* **Concurrency:** 3 parallel FreeRTOS tasks (WiFi, MQTT, Sensor Sampling).
-
----
+- Reconnect handling is a stub and needs to be completed.
+- The alarm currently publishes its event only while connected.
+- Timing and uptime have not been measured yet. I will add real numbers here after testing.
